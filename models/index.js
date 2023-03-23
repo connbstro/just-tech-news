@@ -1,3 +1,7 @@
+// Require User model
 const User = require("./User");
+// Require Post model
+const Post = require("./Post");
 
-module.exports = { User };
+// Export Post & User models
+module.exports = { User, Post };
