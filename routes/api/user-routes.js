@@ -2,22 +2,15 @@
 const router = require("express").Router();
 const { User } = require("../../models");
 
-// // GET /api/users (Get all users)
-// router.get("/", (req, res) => {
-//   // Access our User model and run .findAll() method
-//   // .finAll() is equivalent to "SELECT * FROM users;"
-//   User.findAll()
-//     .then(dbUserData => res.json(dbUserData))
-//     .catch(err => {
-//       console.log(err);
-//       res.status(500).json(err);
-//     });
-// });
-
-// GET /api/users
+// GET /api/users (Get all users)
 router.get("/", (req, res) => {
   // Access our User model and run .findAll() method)
-  User.findAll()
+  // .finAll() is equivalent to "SELECT * FROM users;"
+  User.findAll({
+    // This excludes password the column with the 'attributes' key
+    // This is in an array so if we want to exclude more than one we can add more
+    attributes: { exclude: ['password'] }
+  })
     .then((dbUserData) => res.json(dbUserData))
     .catch((err) => {
       console.log(err);
@@ -29,6 +22,7 @@ router.get("/", (req, res) => {
 router.get("/:id", (req, res) => {
   User.findOne({
     // same as the query "SELECT * FROM users WHERE id = 1;"
+    attributes: { exclude: ['password'] },
     where: {
       id: req.params.id,
     },
@@ -49,8 +43,8 @@ router.get("/:id", (req, res) => {
 
 // POST /api/users (Insert/Create data)
 router.post("/", (req, res) => {
-  // expects {username: 'Lernantino', email: 'lernantino@gmail.com', password: 'password1234'}
-  // to insert data we use sequelize's ".create()" method.
+  // Expects {username: 'Lernantino', email: 'lernantino@gmail.com', password: 'password1234'}
+  // To insert data we use sequelize's ".create()" method.
   // Pass in key/value pairs where the keys are what we defined in the User model and values are what we got from 'req.body'
   // Same as INSERT INTO users (username, email, password), VALUES ("Lernantino", "lernantino@gmail.com", "password1234");
   User.create({
