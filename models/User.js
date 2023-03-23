@@ -1,8 +1,15 @@
 const { Model, DataTypes } = require("sequelize");
 const sequelize = require("../config/connection");
+const bcrypt = require("bcrypt");
 
-// create our User model
-class User extends Model {}
+// Create our User model
+class User extends Model {
+  // Set up method to run on instance data (per user) to check password
+  checkPassword(loginPw) {
+    // Using the keyword this, we can access this user's properties, including the password
+    return bcrypt.compareSync(loginPw, this.password);
+  }
+}
 
 // define table columns and configuration
 User.init(
@@ -46,6 +53,25 @@ User.init(
     },
   },
   {
+    hooks: {
+      // Set up beforeCreate lifecycle "hook" functionality
+      // beforeCreate() hook executes bcrypt hash function on the plaintext password.
+      async beforeCreate(newUserData) {
+        // We pass in a saltRound value of 10.
+        newUserData.password = await bcrypt.hash(newUserData.password, 10);
+        // returns hashed password in the newUserData function.
+        return newUserData;
+      },
+      async beforeUpdate(updatedUserData) {
+        // Encrypts updated password for a user.
+        updatedUserData.password = await bcrypt.hash(
+          updatedUserData.password,
+          10
+        );
+        return updatedUserData;
+      },
+    },
+
     // pass in our imported sequelize connection (the direct connection to our database)
     sequelize,
     // don't automatically create createdAt/updatedAt timestamp fields

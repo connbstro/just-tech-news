@@ -9,7 +9,7 @@ router.get("/", (req, res) => {
   User.findAll({
     // This excludes password the column with the 'attributes' key
     // This is in an array so if we want to exclude more than one we can add more
-    attributes: { exclude: ['password'] }
+    attributes: { exclude: ["password"] },
   })
     .then((dbUserData) => res.json(dbUserData))
     .catch((err) => {
@@ -22,7 +22,7 @@ router.get("/", (req, res) => {
 router.get("/:id", (req, res) => {
   User.findOne({
     // same as the query "SELECT * FROM users WHERE id = 1;"
-    attributes: { exclude: ['password'] },
+    attributes: { exclude: ["password"] },
     where: {
       id: req.params.id,
     },
@@ -54,9 +54,28 @@ router.post("/", (req, res) => {
   })
     .then((dbUserData) => res.json(dbUserData))
     .catch((err) => {
-      console.log(Here);
+      console.log(err);
       res.status(500).json(err);
     });
+});
+
+// User Login
+router.post("/login", (req, res) => {
+  // Queried User table using the findOne() method for the email entered & assigned it to req.body.email
+  // If user is not found a message will be sent
+  // If user IS found, the next step is to verify user identity by matching password and hashed password.
+  User.findOne({
+    where: {
+      email: req.body.email,
+    },
+  }).then((dbUserData) => {
+    if (!dbUserData) {
+      res.status(404).json({ message: "No user with that email address!" });
+      return;
+    }
+    // res.json({ user: dbUserData });
+    // Verify user
+  });
 });
 
 // PUT /api/users/1 (Update data)
@@ -67,6 +86,8 @@ router.put("/:id", (req, res) => {
   // This .update() method combines the parameters for creating data and looking up data.
   // We pass in req.body to provide the new data we want to use in the update and req.params.id to indicate where exactly we want that new data to be used.
   User.update(req.body, {
+    // Input individual hook so password can bcrypt properly
+    individualHooks: true,
     where: {
       id: req.params.id,
     },
